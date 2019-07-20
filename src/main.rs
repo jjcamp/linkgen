@@ -1,106 +1,78 @@
-use colored::*;
-use std::env;
-use std::fs;
+mod util;
+use util::*;
+mod error;
+mod link;
+mod ls;
+mod open;
 
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use colored::*;
+
+// Major Features/Refactorings to do:
+// - 'ls' command should show link path
+// - rename on link option
+// - allow overwrites except on --force
+
+const PKGNAME: &'static str = env!("CARGO_PKG_NAME");
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 
 fn main() -> Result<(), ()> {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 || args.iter().any(|s| { s == "--help" || s == "-?"}) {
-        print_help(&args[0]);
-        return Ok(());
+
+    let args = parse_args();
+
+    if let Some(args) = args.subcommand_matches("ls") {
+        match ls::list_files(args.is_present("verbose")) {
+            Ok(()) => return Ok(()),
+            Err(e) => bail_error(e)
+        }
     }
-    else if args.iter().any(|s| { s == "--version" || s == "-v" }) {
-        print_version();
-        return Ok(());
+
+    if let Some(args) = args.subcommand_matches("open") {
+        match open::dir(args.is_present("verbose")) {
+            Ok(()) => return Ok(()),
+            Err(e) => bail_error(e)
+        }
     }
 
-    let src = match fs::canonicalize(&args[1]) {
-        Ok(p) => p,
-        Err(_e) => {
-            print_invalid_arg(&args[0], &args[1], "Invalid path");
-            std::process::exit(1);
-            // TODO: Try to hint if already on path
-        }
-    };
-
-    let exe = match src.file_name() {
-        Some(s) => s,
-        None => {
-            print_invalid_arg(&args[0], &args[1], "Not a usable path");
-            std::process::exit(1);
-        }
-    };
-
-    let mut dst = match env::current_exe().and_then(|mut f| { f.pop(); return Ok(f); }) {
-        Ok(p) => p,
-        Err(e) => {
-            use std::error::Error;
-            print_other_error(&args[0], format!("{}", e.description()));
-            std::process::exit(1);
-        }
-    };
-
-    dst.push(exe);
-
-    match std::os::windows::fs::symlink_file(&src, dst) {
-        Err(e) => {
-            use std::error::Error;
-            print_other_error(&args[0], format!("{}", e.description()));
-            std::process::exit(1);
-        }
-        _ => ()
-    };
-
-    println!("{} {:?}", "Added symlink to".green(), exe.to_os_string());
-
-    return Ok(());
+    let verbose = args.is_present("verbose");
+    let file_str = args.value_of("PATH_TO_EXECUTABLE").unwrap();
+    
+    match link::file(file_str, verbose) {
+        Ok(()) => return Ok(()),
+        Err(e) => bail_error(e)
+    }
 }
 
-fn print_version() {
-    println!("{} — version {}", "Link Generator".green().bold(), VERSION);
-    println!("{}", AUTHORS);
-}
-
-fn print_about() {
-    print_version();
-    println!("\n{}", "Creates soft links to executables.".cyan());
-    println!("{} The soft links are installed {},", "NOTE:".bold(), "in the directory of this executable".italic());
-    println!("(presumably in your path) {} {}", "not".bold(), "in the current working directory.");
-}
-
-fn print_usage(this: &String) {
-    println!("\nUsage:");
-    println!("{} PATH_TO_EXECUTABLE", this);
-    println!("{:5}where 'PATH_TO_EXECUTABLE' is the executable to link", "");
-}
-
-fn print_flags() {
-    println!("\nAdditional commands:");
-    println!("{:10}", "--help".magenta());
-    println!("{:10}{}\n", "-?".magenta(), "Prints this help message and quits");
-    println!("{:10}", "--version".magenta());
-    println!("{:10}{}\n", "-v".magenta(), "Prints the version and quits.");
-}
-
-fn print_help(this: &String) {
-    print_about();
-    print_usage(this);
-    print_flags();
-}
-
-fn print_short_help(this: &String) {
-    println!("\n Use '{} --help' for help.", this);
-}
-
-fn print_invalid_arg(this: &String, arg: &String, why: &'static str) {
-    println!("{} {}", "Invalid argument:".red(), arg);
-    println!("{:5}Reason: {}", "", why);
-    print_short_help(this);
-}
-
-fn print_other_error(this: &String, what: String) {
-    println!("{} {}", "Error: ".red(), what);
-    print_short_help(this);
+fn parse_args() -> ArgMatches<'static> {
+    return App::new(PKGNAME.green().bold().to_string())
+        .version(VERSION)
+        .author(AUTHORS)
+        .about("Creates soft links to executables.")
+        .setting(AppSettings::ArgsNegateSubcommands)
+        .setting(AppSettings::SubcommandsNegateReqs)
+        .setting(AppSettings::VersionlessSubcommands)
+        .arg(Arg::with_name("verbose")
+            .short("v")
+            .long("verbose")
+            .help("Verbose output"))
+        .arg(Arg::with_name("PATH_TO_EXECUTABLE")
+            .help("Path to the executable to link")
+            .required(true)
+            .index(1))
+        .subcommand(SubCommand::with_name("ls")
+            .alias("dir")
+            .about("Enumerate the host directory")
+            .arg(Arg::with_name("verbose")
+                .short("v")
+                .long("verbose")
+                .help("Verbose output")))
+        .subcommand(SubCommand::with_name("open")
+            .aliases(&["start", "explorer", "nautilus"])
+            .about(open::about_msg())
+            .arg(Arg::with_name("verbose")
+                .short("v")
+                .long("verbose")
+                .help("Verbose output")))
+        .get_matches();
 }
