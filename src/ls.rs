@@ -24,25 +24,29 @@ pub fn list_files(verbose: bool) -> Result<(), Error> {
             }
         };
 
-        let ftype = match fs::symlink_metadata(de.path()) {
+        let (ftype, extra) = match fs::symlink_metadata(de.path()) {
             Err(e) => {
                 verbose_msg(verbose, e);
-                "error".red()
+                ("error".red(), None)
             },
             Ok(slmd) => {
                 let ft = slmd.file_type();
-                // TODO: Use std::os::windows::fs to get file or dir symlink on windows
-                if ft.is_symlink() { "symlink".blue() }
-                else if ft.is_dir() { "directory".cyan() }
-                else if ft.is_file() { "file".clear() }
+                if ft.is_symlink() { ("symlink".blue(), std::fs::read_link(de.path()).ok()) }
+                else if ft.is_dir() { ("directory".cyan(), None) }
+                else if ft.is_file() { ("file".clear(), None) }
                 else {
                     verbose_msg(verbose, "Could not determine file type");
-                    "unkown".red()
+                    ("unkown".red(), None)
                 }
             }
         };
 
-        println!("{:20.20} {:>10}", name, ftype);
+        let extra_str = match extra {
+            Some(pb) => pb.into_os_string().into_string().unwrap_or(String::from("")),
+            None => String::from("")
+        };
+
+        println!("{:20.20} {:>10.10} {}", name, ftype, extra_str);
     });
 
     Ok(())

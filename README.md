@@ -14,4 +14,4 @@ to access from your PATH can then easily be added by using
 Linkgen is currently only tested against Windows, but is developed with other
 operating systems in mind.
 
-See `linkgen --help` for more information.
+See `linkgen help` for more information.

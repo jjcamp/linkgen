@@ -9,7 +9,6 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::*;
 
 // Major Features/Refactorings to do:
-// - 'ls' command should show link path
 // - rename on link option
 // - allow overwrites except on --force
 
