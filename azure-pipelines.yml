@@ -3,7 +3,12 @@
 
 trigger:
   branches:
-    include: ['*']
+    include:
+    - master
+    - feature/*
+
+pr:
+  - master
 
 strategy:
   matrix:
@@ -35,10 +40,10 @@ steps:
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
   - script: cargo build --all
-    displayName: Cargo build
+    displayName: Debug build
 
   - script: cargo test --all
-    displayName: Cargo test
+    displayName: Unit tests
   
   - task: NodeTool@0
     inputs:
@@ -47,4 +52,12 @@ steps:
 
   - script: node tests.js
     displayName: I/O test
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+
+  - script: cargo build --release
+    displayName: Release build
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
+
+  - publish: $(System.DefaultWorkingDirectory)/target/release/linkgen.exe
+    artifact: windows_exe
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
