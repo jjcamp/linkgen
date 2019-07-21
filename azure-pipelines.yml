@@ -44,5 +44,5 @@ steps:
     inputs:
        versionSpec: '12.x'
 
-  - script: ls . && node test.js
+  - script: node tests.js
     displayName: I/O test
