@@ -1,3 +1,4 @@
+# Thanks to Nick Babcock, who pioneered the Rust portions of this pipeline
 # https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects
 
 trigger:
