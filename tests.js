@@ -2,7 +2,7 @@
 
 // Settings
 const linkgen_path = "./target/debug/linkgen.exe";
-const default_timeout = 1000;
+const default_timeout = 100;
 
 // Tests
 const tests = [
