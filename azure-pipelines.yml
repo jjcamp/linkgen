@@ -44,6 +44,8 @@ steps:
   - task: NodeTool@0
     inputs:
        versionSpec: '12.x'
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
   - script: node tests.js
     displayName: I/O test
+    condition: eq( variables['Agent.OS'], 'Windows_NT' )
