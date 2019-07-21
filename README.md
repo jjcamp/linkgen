@@ -9,6 +9,7 @@ in `linkgen.exe`, then add that folder to your PATH. Applications which you want
 to access from your PATH can then easily be added by using
 `linkgen ./path/to/exe`.
 
-Currently only works on Windows, though adding support for other OSs is trivial.
+Linkgen is currently only tested against Windows, but is developed with other
+operating systems in mind.
 
 See `linkgen --help` for more information.
