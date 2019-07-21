@@ -1,6 +1,8 @@
 use crate::util::*;
 use crate::error::Error;
 
+#[allow(unused_imports)]
+use colored::Colorize;
 use std::process::Command;
 
 #[cfg(target_os = "windows")]
@@ -26,8 +28,7 @@ pub fn dir(verbose: bool) -> Result<(), Error> {
 #[cfg(target_os = "linux")]
 pub fn dir(verbose: bool) -> Result<(), Error> {
     // TODO: probably probe for different possible commands
-    println!("{} command not implemented for your operating system".red());
-    Err(())
+    Error::new_result("Command not implemented for your operating system")
 }
 
 #[cfg(target_os = "linux")]

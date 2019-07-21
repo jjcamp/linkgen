@@ -8,9 +8,9 @@ use std::fs;
 #[cfg(target_os = "windows")]
 use std::os::windows::fs::symlink_file as symlink_file;
 #[cfg(target_os = "linux")]
-use std::os::linux::fs::symlink_file as symlink_file;
+use std::os::unix::fs::symlink as symlink_file;
 #[cfg(target_os = "macos")]
-use std::os::unix::fs::symlink_file as symlink_file;
+use std::os::unix::fs::symlink as symlink_file;
 
 pub fn file(path: &str, verbose: bool) -> Result<(), Error> {
     let src = match fs::canonicalize(path) {
