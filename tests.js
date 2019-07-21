@@ -54,7 +54,7 @@ function test_case(name, args, expected) {
     const fail = color_string('[FAIL]', 'red');
     const pass = color_string('[PASS]', 'green');
 
-    if (typeof proc_result.status === 'undefined') {
+    if (typeof proc_result.status === 'undefined' || proc_result.status == null) {
         console.error(`${fail} ${name}: Terminated, possibly due to timeout`);
         return false;
     }

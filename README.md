@@ -1,5 +1,7 @@
 # Link Generator
 
+[![Build Status](https://dev.azure.com/jjcamp/Path%20Tools/_apis/build/status/jjcamp.linkgen?branchName=master)](https://dev.azure.com/jjcamp/Path%20Tools/_build/latest?definitionId=1&branchName=master)
+
 Generates symbolic links from executables, into the directory where
 `linkgen.exe` sits (presumably on the user's PATH).
 
