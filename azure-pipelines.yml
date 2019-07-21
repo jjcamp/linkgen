@@ -36,3 +36,7 @@ steps:
     displayName: Cargo build
   - script: cargo test --all
     displayName: Cargo test
+  
+  - task: NodeTool@10.0
+  - script: node test.js
+    displayName: I/O test
