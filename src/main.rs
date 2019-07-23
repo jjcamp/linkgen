@@ -9,7 +9,6 @@ use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::*;
 
 // Major Features/Refactorings to do:
-// - rename on link option
 // - allow overwrites except on --force
 
 const PKGNAME: &'static str = env!("CARGO_PKG_NAME");
@@ -36,8 +35,9 @@ fn main() -> Result<(), ()> {
 
     let verbose = args.is_present("verbose");
     let file_str = args.value_of("PATH_TO_EXECUTABLE").unwrap();
+    let alias = args.value_of("ALIAS");
     
-    match link::file(file_str, verbose) {
+    match link::file(file_str, alias, verbose) {
         Ok(()) => return Ok(()),
         Err(e) => bail_error(e)
     }
@@ -59,6 +59,9 @@ fn parse_args() -> ArgMatches<'static> {
             .help("Path to the executable to link")
             .required(true)
             .index(1))
+        .arg(Arg::with_name("ALIAS")
+            .help("Give link a different name")
+            .index(2))
         .subcommand(SubCommand::with_name("ls")
             .alias("dir")
             .about("Enumerate the host directory")
