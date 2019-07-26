@@ -32,13 +32,11 @@ fn ext_helper(exe: &std::ffi::OsStr, alias: &str) -> String {
     alias.to_owned()
 }
 
-pub fn file(path: &str, alias: Option<&str>, verbose: bool) -> Result<(), Error> {
+pub fn file(path: &str, alias: Option<&str>, force: bool, verbose: bool) -> Result<(), Error> {
     let src = match fs::canonicalize(path) {
         Ok(p) => p,
-        Err(e) => {
+        Err(e) =>
             return Error::result(e)
-            // TODO: Try to hint if already on path
-        }
     };
 
     let exe = match src.file_name() {
@@ -55,9 +53,16 @@ pub fn file(path: &str, alias: Option<&str>, verbose: bool) -> Result<(), Error>
     
     verbose_msg(verbose, format!("Linking {}", src.to_str().unwrap_or("")));
 
-    symlink_file(&src, dst)?;
+    match symlink_file(&src, &dst) {
+        Err(e) => {
+            if !force { return Error::result(e); }
+            fs::remove_file(&dst)?;
+            symlink_file(&src, &dst)?
+        },
+        Ok(()) => ()
+    }
 
-    println!("{} {:?}{}", "Added symlink to".green(), exe/*.to_os_string()*/, match alias {
+    println!("{} {:?}{}", "Added symlink to".green(), exe, match alias {
         Some(a) => format!(" as \"{}\"", a),
         None => String::new()
     });

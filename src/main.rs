@@ -8,9 +8,6 @@ mod open;
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use colored::*;
 
-// Major Features/Refactorings to do:
-// - allow overwrites except on --force
-
 const PKGNAME: &'static str = env!("CARGO_PKG_NAME");
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
@@ -34,10 +31,11 @@ fn main() -> Result<(), ()> {
     }
 
     let verbose = args.is_present("verbose");
+    let force = args.is_present("force");
     let file_str = args.value_of("PATH_TO_EXECUTABLE").unwrap();
     let alias = args.value_of("ALIAS");
     
-    match link::file(file_str, alias, verbose) {
+    match link::file(file_str, alias, force, verbose) {
         Ok(()) => return Ok(()),
         Err(e) => bail_error(e)
     }
@@ -55,6 +53,10 @@ fn parse_args() -> ArgMatches<'static> {
             .short("v")
             .long("verbose")
             .help("Verbose output"))
+        .arg(Arg::with_name("force")
+            .short("f")
+            .long("force")
+            .help("Force an operation which may otherwise be rejected"))
         .arg(Arg::with_name("PATH_TO_EXECUTABLE")
             .help("Path to the executable to link")
             .required(true)
