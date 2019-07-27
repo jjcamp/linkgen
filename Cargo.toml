@@ -1,6 +1,6 @@
 [package]
 name = "linkgen"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["John J. Camp <jjcamp@gmail.com>"]
 edition = "2018"
 
